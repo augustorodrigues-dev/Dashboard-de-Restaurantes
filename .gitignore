@@ -1,0 +1,17 @@
+
+.streamlit/secrets.toml
+
+
+.venv/
+venv/
+*.venv
+
+
+__pycache__/
+*.pyc
+*.pyo
+
+
+*.dump
+*.backup
+*.sql
