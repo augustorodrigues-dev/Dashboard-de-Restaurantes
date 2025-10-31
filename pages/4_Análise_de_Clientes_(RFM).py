@@ -3,7 +3,15 @@ import pandas as pd
 import sqlalchemy
 import plotly.express as px
 from datetime import datetime, timedelta
-import queries  
+import queries 
+
+@st.cache_data
+def convert_df_to_csv(df):
+    """
+    Função em cache para converter o DataFrame para CSV em memória,
+    pronto para download.
+    """
+    return df.to_csv(index=True, encoding='utf-8-sig').encode('utf-8-sig')
 
 @st.cache_resource
 def get_engine():
@@ -16,6 +24,16 @@ def get_engine():
         st.stop()
 
 engine = get_engine()
+
+@st.cache_data(ttl=3600)
+def carregar_limites_de_data():
+    with engine.connect() as conn:
+        result = conn.execute(sqlalchemy.text(queries.SELECT_DATE_LIMITS)).fetchone()
+    if result and result.min_date and result.max_date:
+        return result.min_date, result.max_date
+    fallback_start = datetime.now().date() - timedelta(days=30)
+    fallback_end = datetime.now().date()
+    return (fallback_start, fallback_end)
 
 @st.cache_data(ttl=600, show_spinner="Carregando dimensões...")
 def carregar_tabelas_dimensao():
@@ -52,16 +70,20 @@ def carregar_dados_rfm(data_referencia):
         df = pd.read_sql(queries.SELECT_RFM, conn, params=query_params)
     return df
 
+min_date, max_date = carregar_limites_de_data()
 df_stores, df_channels, df_payment_types = carregar_tabelas_dimensao()
 
 st.sidebar.header("Filtros Globais")
 st.sidebar.write("Estes filtros afetam **todas** as páginas.")
 
-default_start = datetime.now().date() - timedelta(days=30)
-default_end = datetime.now().date()
+default_start = max(min_date, max_date - timedelta(days=30))
+default_end = max_date
+
 date_range = st.sidebar.date_input(
     "Selecione o Período",
     (default_start, default_end),
+    min_value=min_date,
+    max_value=max_date,
     format="DD/MM/YYYY"
 )
 if len(date_range) != 2:
@@ -83,41 +105,95 @@ selected_channel_names = st.sidebar.multiselect(
     default=["Todos os Canais"]
 )
 
-st.title("🫂 Análise de Clientes (RFM)")
-st.write("Responde à dor: *'Quais clientes compraram 3+ vezes mas não voltam há 30 dias?'*")
-st.info(f"A análise usa **{end_date.strftime('%d/%m/%Y')}** (data final do filtro) como referência para calcular os 'dias sem comprar'.")
+df_analysis_data, df_payments = carregar_dados_fato_e_explorer(start_date, end_date)
 
-
-df_rfm = carregar_dados_rfm(end_date)
-
-if df_rfm.empty:
-    st.warning("Nenhum dado de cliente encontrado.")
+if not df_analysis_data.empty:
+    df_analysis_data['created_at_date'] = pd.to_datetime(df_analysis_data['created_at']).dt.date
 else:
-    st.header("Filtros da Análise RFM")
-    col1, col2 = st.columns(2)
+    st.info("Nenhum dado de venda encontrado para o período selecionado.")
+
+df_analysis_filt = df_analysis_data.copy()
+if "Todas as Lojas" not in selected_store_names:
+    df_analysis_filt = df_analysis_filt[df_analysis_filt['store_name'].isin(selected_store_names)]
+if "Todos os Canais" not in selected_channel_names:
+    df_analysis_filt = df_analysis_filt[df_analysis_filt['channel_name'].isin(selected_channel_names)]
+
+if df_analysis_filt.empty and not df_analysis_data.empty:
+    st.warning("Nenhum dado encontrado para os filtros globais aplicados.")
+
+df_sales_filt = df_analysis_filt.drop_duplicates(subset=['sale_id'])
+
+st.title("📉 Análise de Descontos e Taxas")
+st.write("Entenda para onde está indo seu faturamento e quais canais custam mais caro.")
+
+if df_sales_filt.empty:
+    st.warning("Nenhum dado de venda para exibir com os filtros atuais.")
+else:
     
+    total_bruto = df_sales_filt['total_amount_items'].sum()
+    total_descontos = df_sales_filt['total_discount'].sum()
+    total_taxas_delivery = df_sales_filt['delivery_fee'].sum()
+    total_taxas_servico = df_sales_filt['service_tax_fee'].sum()
+    total_taxas = total_taxas_delivery + total_taxas_servico
+    total_liquido = total_bruto - total_descontos - total_taxas
+
+    perc_desconto = (total_descontos / total_bruto * 100) if total_bruto > 0 else 0
+    perc_taxa = (total_taxas / total_bruto * 100) if total_bruto > 0 else 0
+
+    st.header("Visão Geral Financeira (Líquida)")
     
-    min_freq = col1.number_input(
-        "Mínimo de Pedidos (Frequência)", 
-        min_value=1, 
-        value=3
-    )
-    min_rec = col2.number_input(
-        "Mínimo de Dias Sem Comprar (Recência)", 
-        min_value=0, 
-        value=30
-    )
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Faturamento Bruto (Itens)", f"R$ {total_bruto:,.2f}")
+    col2.metric("Total de Descontos", f"R$ {total_descontos:,.2f}", 
+                help=f"{perc_desconto:.1f}% do Bruto")
+    col3.metric("Total de Taxas (Serviço/Entrega)", f"R$ {total_taxas:,.2f}",
+                help=f"{perc_taxa:.1f}% do Bruto")
+    
+    st.subheader(f"Faturamento Líquido Estimado: R$ {total_liquido:,.2f}")
+    st.progress((total_liquido / total_bruto) if total_bruto > 0 else 0)
+
+    st.markdown("---")
+    st.header("Análise Detalhada por Canal")
+    st.write("Veja quais canais mais aplicam descontos ou cobram taxas.")
 
     
-    df_rfm_filtrado = df_rfm[
-        (df_rfm['frequencia'] >= min_freq) &
-        (df_rfm['dias_sem_comprar'] >= min_rec)
-    ]
-
-    st.header(f"Resultados: Clientes Encontrados")
-    st.metric(
-        f"Clientes com {min_freq}+ pedidos que não compram há {min_rec}+ dias",
-        f"{len(df_rfm_filtrado)} clientes"
+    df_canal = df_sales_filt.groupby('channel_name').agg(
+        Faturamento_Bruto=('total_amount_items', 'sum'),
+        Descontos=('total_discount', 'sum'),
+        Taxas=('delivery_fee', 'sum'), 
+        Pedidos=('sale_id', 'nunique')
     )
+    df_canal['Desconto_por_Pedido'] = (df_canal['Descontos'] / df_canal['Pedidos']).fillna(0)
     
-    st.dataframe(df_rfm_filtrado)
+    s
+    fig_canal = px.bar(
+        df_canal.sort_values(by='Descontos', ascending=False),
+        y=['Faturamento_Bruto', 'Descontos', 'Taxas'],
+        barmode='group',
+        title="Faturamento Bruto vs. Descontos e Taxas por Canal",
+        labels={'value': 'Valor (R$)', 'channel_name': 'Canal'}
+    )
+    st.plotly_chart(fig_canal, width="stretch")
+
+    
+    st.subheader("Desconto Médio por Pedido (por Canal)")
+    df_canal_display = df_canal[['Desconto_por_Pedido', 'Pedidos']].sort_values(by='Desconto_por_Pedido', ascending=False)
+    
+    
+    df_canal_display_formatted = df_canal_display.copy()
+    df_canal_display_formatted['Desconto_por_Pedido'] = df_canal_display_formatted['Desconto_por_Pedido'].map('R$ {:,.2f}'.format)
+    st.dataframe(df_canal_display_formatted, use_container_width=True)
+
+    if not df_canal_display.empty:
+        st.markdown("---")
+        
+        csv_data = convert_df_to_csv(df_canal) 
+        filename = "relatorio_descontos_por_canal.csv"
+        
+        st.download_button(
+            label="📥 Gerar Relatório de Descontos (Download CSV)",
+            data=csv_data,
+            file_name=filename,
+            mime='text/csv',
+            use_container_width=True
+        )
