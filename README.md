@@ -38,7 +38,7 @@ Você precisa de um banco PostgreSQL com os dados de exemplo que estão armazena
     * *Navegue até a pasta `bin` da sua instalação do PostgreSQL (ex: `C:\Program Files\PostgreSQL\17\bin`)*
     * *Execute o comando (substitua usuário, banco e o caminho do arquivo):*
     ```bash
-    pg_restore -U postgres -d banco_avaliacao "C:\caminho\para\dados_restaurante.dump"
+    pg_restore -U postgres -d banco_avaliacao "C:\caminho\para\backup.dump"
     ```
 
 ### 5. Configurar as Credenciais
