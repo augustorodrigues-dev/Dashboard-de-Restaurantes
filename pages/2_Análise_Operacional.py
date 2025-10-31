@@ -100,13 +100,13 @@ if df_analysis_filt.empty and not df_analysis_data.empty:
     st.warning("Nenhum dado encontrado para os filtros globais aplicados.")
 
 df_sales_filt = df_analysis_filt.drop_duplicates(subset=['sale_id'])
-st.title("⏱️ Análise Operacional")
+st.title("Análise Operacional")
 
 if df_sales_filt.empty:
     st.warning("Nenhum dado operacional para exibir com os filtros atuais.")
 else:
     st.header("Análise de Tempos (Preparo e Entrega)")
-    st.write("Responde à dor: *'Meu tempo de entrega piorou. Em quais dias/horários?'*")
+    st.write("Use esta página para entender como estão seus pedidos em determinados horários/dias*")
     
     col1, col2 = st.columns(2)
     

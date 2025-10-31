@@ -125,20 +125,20 @@ if df_analysis_filt.empty and not df_analysis_data.empty:
 df_sales_filt = df_analysis_filt.drop_duplicates(subset=['sale_id'])
 df_explorer = df_analysis_filt.dropna(subset=['product_id'])
 
-st.title("🔬 Análise Detalhada (Explorer)")
+st.title("Análise Detalhada (Explorer)")
 
 if df_explorer.empty:
     st.warning("Nenhum dado de produto para analisar com os filtros atuais.")
 else:
     st.header("Construa sua própria análise")
-    st.write("Responde às dores: *'Qual produto vende mais...?'* e *'Meu ticket médio está caindo...?'*")
+    st.write("Use esta página para análisar seus tickets médios ou para ver como estão as vendas dos produtos")
 
     st.subheader("Controles da Análise")
     
     col1, col2, col3 = st.columns(3)
     
     dimensao_map = {
-        "Produto": "product_name",
+        "Produtos": "product_name",
         "Categoria": "category_name",
         "Loja": "store_name",
         "Canal": "channel_name",
@@ -234,7 +234,7 @@ else:
                 ).fillna(0)
             
         if segment_selec == "Nenhum":
-            sort_title_prefix = "Top" if sort_order == "Maiores Valores (Top N)" else "Bottom"
+            sort_title_prefix = "Top" if sort_order == "Maiores Valores" else "Piores"
             chart_title = f"{sort_title_prefix} {n_items} {dimensao_selec} por {metrica_selec}"
             plot_df = analysis_df.head(n_items)
         else:
@@ -269,7 +269,7 @@ else:
             filename = f"relatorio_explorer_{dimensao_selec}_{metrica_selec}.csv"
             
             st.download_button(
-                label="📥 Gerar Relatório (Download CSV)",
+                label="Gerar Relatório (Download CSV)",
                 data=csv_data,
                 file_name=filename,
                 mime='text/csv',

@@ -105,95 +105,52 @@ selected_channel_names = st.sidebar.multiselect(
     default=["Todos os Canais"]
 )
 
-df_analysis_data, df_payments = carregar_dados_fato_e_explorer(start_date, end_date)
+st.title("🫂 Análise de Clientes (RFM)")
+st.write("Utilize essa página para analisar quais clientes compraram x vezes mas não voltam há y dias")
+st.info(f"A análise usa **{end_date.strftime('%d/%m/%Y')}** (data final do filtro) como referência para calcular os 'dias sem comprar'.")
 
-if not df_analysis_data.empty:
-    df_analysis_data['created_at_date'] = pd.to_datetime(df_analysis_data['created_at']).dt.date
+df_rfm = carregar_dados_rfm(end_date)
+
+if df_rfm.empty:
+    st.warning("Nenhum dado de cliente encontrado.")
 else:
-    st.info("Nenhum dado de venda encontrado para o período selecionado.")
-
-df_analysis_filt = df_analysis_data.copy()
-if "Todas as Lojas" not in selected_store_names:
-    df_analysis_filt = df_analysis_filt[df_analysis_filt['store_name'].isin(selected_store_names)]
-if "Todos os Canais" not in selected_channel_names:
-    df_analysis_filt = df_analysis_filt[df_analysis_filt['channel_name'].isin(selected_channel_names)]
-
-if df_analysis_filt.empty and not df_analysis_data.empty:
-    st.warning("Nenhum dado encontrado para os filtros globais aplicados.")
-
-df_sales_filt = df_analysis_filt.drop_duplicates(subset=['sale_id'])
-
-st.title("📉 Análise de Descontos e Taxas")
-st.write("Entenda para onde está indo seu faturamento e quais canais custam mais caro.")
-
-if df_sales_filt.empty:
-    st.warning("Nenhum dado de venda para exibir com os filtros atuais.")
-else:
+    st.header("Filtros da Análise RFM")
+    col1, col2 = st.columns(2)
     
-    total_bruto = df_sales_filt['total_amount_items'].sum()
-    total_descontos = df_sales_filt['total_discount'].sum()
-    total_taxas_delivery = df_sales_filt['delivery_fee'].sum()
-    total_taxas_servico = df_sales_filt['service_tax_fee'].sum()
-    total_taxas = total_taxas_delivery + total_taxas_servico
-    total_liquido = total_bruto - total_descontos - total_taxas
-
-    perc_desconto = (total_descontos / total_bruto * 100) if total_bruto > 0 else 0
-    perc_taxa = (total_taxas / total_bruto * 100) if total_bruto > 0 else 0
-
-    st.header("Visão Geral Financeira (Líquida)")
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Faturamento Bruto (Itens)", f"R$ {total_bruto:,.2f}")
-    col2.metric("Total de Descontos", f"R$ {total_descontos:,.2f}", 
-                help=f"{perc_desconto:.1f}% do Bruto")
-    col3.metric("Total de Taxas (Serviço/Entrega)", f"R$ {total_taxas:,.2f}",
-                help=f"{perc_taxa:.1f}% do Bruto")
-    
-    st.subheader(f"Faturamento Líquido Estimado: R$ {total_liquido:,.2f}")
-    st.progress((total_liquido / total_bruto) if total_bruto > 0 else 0)
-
-    st.markdown("---")
-    st.header("Análise Detalhada por Canal")
-    st.write("Veja quais canais mais aplicam descontos ou cobram taxas.")
-
-    
-    df_canal = df_sales_filt.groupby('channel_name').agg(
-        Faturamento_Bruto=('total_amount_items', 'sum'),
-        Descontos=('total_discount', 'sum'),
-        Taxas=('delivery_fee', 'sum'), 
-        Pedidos=('sale_id', 'nunique')
+    min_freq = col1.number_input(
+        "Mínimo de Pedidos (Frequência)", 
+        min_value=1, 
+        value=3
     )
-    df_canal['Desconto_por_Pedido'] = (df_canal['Descontos'] / df_canal['Pedidos']).fillna(0)
-    
-    s
-    fig_canal = px.bar(
-        df_canal.sort_values(by='Descontos', ascending=False),
-        y=['Faturamento_Bruto', 'Descontos', 'Taxas'],
-        barmode='group',
-        title="Faturamento Bruto vs. Descontos e Taxas por Canal",
-        labels={'value': 'Valor (R$)', 'channel_name': 'Canal'}
+    min_rec = col2.number_input(
+        "Mínimo de Dias Sem Comprar (Recência)", 
+        min_value=0, 
+        value=30
     )
-    st.plotly_chart(fig_canal, width="stretch")
 
-    
-    st.subheader("Desconto Médio por Pedido (por Canal)")
-    df_canal_display = df_canal[['Desconto_por_Pedido', 'Pedidos']].sort_values(by='Desconto_por_Pedido', ascending=False)
-    
-    
-    df_canal_display_formatted = df_canal_display.copy()
-    df_canal_display_formatted['Desconto_por_Pedido'] = df_canal_display_formatted['Desconto_por_Pedido'].map('R$ {:,.2f}'.format)
-    st.dataframe(df_canal_display_formatted, use_container_width=True)
+    df_rfm_filtrado = df_rfm[
+        (df_rfm['frequencia'] >= min_freq) &
+        (df_rfm['dias_sem_comprar'] >= min_rec)
+    ]
 
-    if not df_canal_display.empty:
+    st.header(f"Resultados: Clientes Encontrados")
+    st.metric(
+        f"Clientes com {min_freq}+ pedidos que não compram há {min_rec}+ dias",
+        f"{len(df_rfm_filtrado)} clientes"
+    )
+    
+    st.dataframe(df_rfm_filtrado)
+
+    if not df_rfm_filtrado.empty:
         st.markdown("---")
         
-        csv_data = convert_df_to_csv(df_canal) 
-        filename = "relatorio_descontos_por_canal.csv"
+        csv_data = convert_df_to_csv(df_rfm_filtrado)
+        filename = f"relatorio_clientes_rfm_f{min_freq}_r{min_rec}.csv"
         
         st.download_button(
-            label="📥 Gerar Relatório de Descontos (Download CSV)",
+            label="Gerar Relatório de Clientes (Download CSV)",
             data=csv_data,
             file_name=filename,
             mime='text/csv',
-            use_container_width=True
+            width="stretch"
         )
