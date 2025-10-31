@@ -6,6 +6,7 @@ Estas instruções são para caso o deploy não esteja funcionando ou tenha a cu
 ```bash
 git clone https://github.com/augustorodrigues-dev/Dashboard-de-Restaurantes
 cd Dashboard-de-Restaurantes
+````
 
 ### 2. Criar e Ativar o Ambiente Virtual (.venv)
 ```bash
