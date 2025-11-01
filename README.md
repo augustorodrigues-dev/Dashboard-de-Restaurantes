@@ -6,6 +6,7 @@ Estas instruções são para caso o deploy não esteja funcionando ou tenha a cu
 ```bash
 git clone https://github.com/augustorodrigues-dev/Dashboard-de-Restaurantes
 cd Dashboard-de-Restaurantes
+````
 
 ### 2. Criar e Ativar o Ambiente Virtual (.venv)
 ```bash
@@ -32,7 +33,7 @@ Você precisa de um banco PostgreSQL com os dados de exemplo que estão armazena
 
 1.  **Crie um Banco Vazio:** No pgAdmin (ou Neon), crie um novo banco de dados (ex: `banco_avaliacao`).
 2.  **Baixe os Dados:** Baixe o arquivo de backup de dados (`.dump`) aqui:
-    * **[(https://drive.google.com/drive/folders/1c0q1xaMU4um7eFmzFgxrPwTgWDLoiSE2?usp=drive_link)]**
+    * **[Drive](https://drive.google.com/drive/folders/1c0q1xaMU4um7eFmzFgxrPwTgWDLoiSE2?usp=drive_link)**
 3.  **Restaure os Dados:** Use o `pg_restore` para carregar os dados no seu banco vazio.
     * *Navegue até a pasta `bin` da sua instalação do PostgreSQL (ex: `C:\Program Files\PostgreSQL\17\bin`)*
     * *Execute o comando (substitua usuário, banco e o caminho do arquivo):*
