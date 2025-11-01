@@ -1,3 +1,9 @@
+## 🚀 Demonstração Ao Vivo (Deploy)
+
+**[CLIQUE AQUI PARA ACESSAR O DASHBOARD AO VIVO](https://dashboard-de-restaurantes-4rescxo3zdqshpyfzgdefx.streamlit.app/)**
+
+---
+
 ## Como Executar o Projeto Localmente
 
 Estas instruções são para caso o deploy não esteja funcionando ou tenha a curiosidade de testar a performance localmente, caso o contrário, recomendo que use o link do aplicativo em nuvem acima.
