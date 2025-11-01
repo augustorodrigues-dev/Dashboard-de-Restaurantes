@@ -32,17 +32,19 @@ def carregar_dados_fato_e_explorer(start_date, end_date):
     
     with engine.connect() as conn:
         df_analysis_data = pd.read_sql(queries.SELECT_ANALYSIS_DATA, conn, params=query_params)
+
         if df_analysis_data.empty:
             return pd.DataFrame(), pd.DataFrame()
-
+        
         sales_ids_list = df_analysis_data['sale_id'].unique().tolist()
         sales_ids = tuple(sales_ids_list) 
+        
         if not sales_ids:
             return df_analysis_data, pd.DataFrame()
 
-        query_params_ids = {"sales_ids": sales_ids}
-        df_payments = pd.read_sql(queries.SELECT_PAYMENTS, conn, params=query_params_ids)
-
+        sql_payments_query = f"SELECT sale_id, payment_type_id, value FROM payments WHERE sale_id IN {sales_ids}"
+        df_payments = pd.read_sql(sql_payments_query, conn)
+    
     return df_analysis_data, df_payments
 
 @st.cache_data(ttl=600, show_spinner="Analisando comportamento dos clientes...")
