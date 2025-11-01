@@ -2,8 +2,6 @@
 Este arquivo centraliza todas as consultas SQL usadas no dashboard.
 VERSÃO SEM DEPENDÊNCIA: Compatível com psycopg (v3).
 """
-
-# Consultas para preencher os filtros (Dimensões)
 SELECT_STORES = """
     SELECT id as store_id, name as store_name 
     FROM stores 
@@ -20,14 +18,13 @@ SELECT_PAYMENT_TYPES = """
     FROM payment_types
 """
 
-# Busca a data mínima e máxima
+
 SELECT_DATE_LIMITS = """
     SELECT MIN(created_at)::date as min_date, MAX(created_at)::date as max_date 
     FROM sales
 """
 
-# Consulta para carregar os dados principais (Fatos)
-# MUDANÇA: Voltamos para %(start)s e %(end)s
+
 SELECT_ANALYSIS_DATA = """
 SELECT
     s.id AS sale_id, s.created_at, s.total_amount, s.production_seconds,
@@ -52,16 +49,14 @@ LEFT JOIN categories c ON p.category_id = c.id
 WHERE s.created_at >= %(start)s AND s.created_at < %(end)s
 """
 
-# Consulta para carregar os dados de pagamento (separados)
-# Esta query não será usada pela função corrigida, mas deixamos aqui
+
 SELECT_PAYMENTS = """
     SELECT sale_id, payment_type_id, value 
     FROM payments 
     WHERE sale_id IN %(sales_ids)s
 """
 
-# Consulta para carregar a análise RFM
-# MUDANÇA: Voltamos para %(data_ref)s
+
 SELECT_RFM = """
 WITH rfm AS (
     SELECT
