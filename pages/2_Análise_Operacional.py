@@ -28,28 +28,27 @@ def carregar_tabelas_dimensao():
 @st.cache_data(ttl=600, show_spinner="Carregando dados de vendas...")
 def carregar_dados_fato_e_explorer(start_date, end_date):
     end_date_sql = end_date + timedelta(days=1)
-    query_params = {"start": start_date, "end": end_date_sql}
+    query_params = (start_date, end_date_sql)
     
     with engine.connect() as conn:
         df_analysis_data = pd.read_sql(queries.SELECT_ANALYSIS_DATA, conn, params=query_params)
 
         if df_analysis_data.empty:
             return pd.DataFrame(), pd.DataFrame()
-        
+
         sales_ids_list = df_analysis_data['sale_id'].unique().tolist()
         sales_ids = tuple(sales_ids_list) 
-        
         if not sales_ids:
             return df_analysis_data, pd.DataFrame()
+        query_params_ids = (sales_ids,)
+        df_payments = pd.read_sql(queries.SELECT_PAYMENTS, conn, params=query_params_ids)
 
-        sql_payments_query = f"SELECT sale_id, payment_type_id, value FROM payments WHERE sale_id IN {sales_ids}"
-        df_payments = pd.read_sql(sql_payments_query, conn)
-    
     return df_analysis_data, df_payments
 
 @st.cache_data(ttl=600, show_spinner="Analisando comportamento dos clientes...")
 def carregar_dados_rfm(data_referencia):
-    query_params = {"data_ref": data_referencia}
+    query_params = (data_referencia,)
+    
     with engine.connect() as conn:
         df = pd.read_sql(queries.SELECT_RFM, conn, params=query_params)
     return df
