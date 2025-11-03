@@ -13,7 +13,7 @@
 
 ---
 
-## 📑 Sumário
+## Sumário
 1. Visão Geral
 2. Principais Funcionalidades
 3. Tecnologias Utilizadas
