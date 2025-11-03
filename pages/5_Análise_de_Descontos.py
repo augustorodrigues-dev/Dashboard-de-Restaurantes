@@ -127,7 +127,7 @@ df_sales_filt = df_analysis_filt.drop_duplicates(subset=['sale_id'])
 
 
 
-st.title("📉 Análise de Descontos e Taxas")
+st.title("Análise de Descontos e Taxas")
 st.write("Entenda para onde está indo seu faturamento e quais canais custam mais caro.")
 
 if df_sales_filt.empty:

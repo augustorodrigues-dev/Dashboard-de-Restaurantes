@@ -114,7 +114,7 @@ selected_channel_names = st.sidebar.multiselect(
     default=["Todos os Canais"]
 )
 
-st.title("🫂 Análise de Clientes (RFM)")
+st.title("Análise de Clientes (RFM)")
 st.write("Utilize essa página para analisar quais clientes compraram x vezes mas não voltam há y dias")
 st.info(f"A análise usa **{end_date.strftime('%d/%m/%Y')}** (data final do filtro) como referência para calcular os 'dias sem comprar'.")
 
