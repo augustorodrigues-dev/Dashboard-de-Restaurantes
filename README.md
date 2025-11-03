@@ -55,28 +55,27 @@ A aplicação conecta-se a um banco de dados **PostgreSQL (NeonDB)** e exibe an�
 ---
 
 ## Estrutura do Projeto
-├── .streamlit/
-│ └── secrets.toml # Credenciais e configurações do Streamlit
-│
-├── .venv/ # Ambiente virtual Python
-│ ├── Lib/ # Bibliotecas instaladas
-│ ├── Scripts/ # Executáveis do ambiente
-│ └── pyvenv.cfg
-│
-├── pages/ # Páginas secundárias do Dashboard
-│ ├── 2_Análise_Operacional.py # Página de desempenho operacional
-│ ├── 3_Análise_Detalhada_(Explorer).py # Página de exploração detalhada de dados
-│ ├── 4_Análise_de_Clientes_(RFM).py # Página de análise de clientes (RFM)
-│ └── 5_Análise_de_Descontos.py # Página de análise de descontos e taxas
-│
-├── Pagina_Principal.py # Página inicial (Visão Geral do Dashboard)
-├── queries.py # Arquivo com as consultas SQL centralizadas
-├── logic.sql # Script SQL adicional para adicionar functions e views
-│
-├── requirements.txt # Dependências do projeto
-├── README.md # Documentação do projeto
-└── .gitignore # Arquivo para ignorar pastas e arquivos no Git
 
+```text
+PROJETOESTAGIO/
+├── .streamlit/
+│   └── secrets.toml                 # Credenciais e configurações do Streamlit
+│
+├── pages/                           # Páginas secundárias do Dashboard
+│   ├── 2_Análise_Operacional.py           # Página de desempenho operacional
+│   ├── 3_Análise_Detalhada_(Explorer).py  # Página de exploração detalhada de dados
+│   ├── 4_Análise_de_Clientes_(RFM).py     # Página de análise de clientes (RFM)
+│   └── 5_Análise_de_Descontos.py          # Página de análise de descontos e taxas
+│
+├── Pagina_Principal.py              # Página inicial (Visão Geral do Dashboard)
+├── queries.py                       # Arquivo com as consultas SQL centralizadas
+├── logic.sql                        # Script SQL adicional para funções/views do banco
+│
+├── requirements.txt                 # Dependências do projeto
+├── README.md                        # Documentação do projeto
+└── .gitignore                       # Arquivo para ignorar pastas/arquivos no Git
+
+```
 ## Como Executar o Projeto Localmente
 
 Estas instruções são para caso o deploy não esteja funcionando ou tenha a curiosidade de testar a performance localmente, caso o contrário, recomendo que use o link do aplicativo em nuvem acima.
