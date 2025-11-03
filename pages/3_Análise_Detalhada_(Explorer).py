@@ -282,7 +282,7 @@ else:
                 data=csv_data,
                 file_name=filename,
                 mime='text/csv',
-                use_container_width=True
+                width='stretch'
             )
 
     except Exception as e:
