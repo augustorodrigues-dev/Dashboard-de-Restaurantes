@@ -57,7 +57,7 @@ A aplicação conecta-se a um banco de dados **PostgreSQL (NeonDB)** e exibe an�
 ## Estrutura do Projeto
 
 ```text
-PROJETOESTAGIO/
+Dashboard-De-Restaurante/
 ├── .streamlit/
 │   └── secrets.toml                 # Credenciais e configurações do Streamlit
 │
