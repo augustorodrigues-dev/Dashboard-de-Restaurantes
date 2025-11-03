@@ -7,18 +7,18 @@
 
 ---
 
-## 🚀 Demonstração Ao Vivo (Deploy)
+## Demonstração Ao Vivo (Deploy)
 
-🎯 **[CLIQUE AQUI PARA ACESSAR O DASHBOARD AO VIVO](https://dashboard-de-restaurantes-4rescxo3zdqshpyfzgdefx.streamlit.app/)**
+**[CLIQUE AQUI PARA ACESSAR O DASHBOARD AO VIVO](https://dashboard-de-restaurantes-4rescxo3zdqshpyfzgdefx.streamlit.app/)**
 
 ---
 
 ## 📑 Sumário
-1. [Visão Geral](#-visão-geral)
-2. [Principais Funcionalidades](#-principais-funcionalidades)
-3. [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-4. [Estrutura do Projeto](#-estrutura-do-projeto)
-5. [Como Executar o Projeto Localmente](#-como-executar-o-projeto-localmente)
+1. Visão Geral
+2. Principais Funcionalidades
+3. Tecnologias Utilizadas
+4. Estrutura do Projeto
+5. Como Executar o Projeto Localmente
 
 ---
 
@@ -55,16 +55,27 @@ A aplicação conecta-se a um banco de dados **PostgreSQL (NeonDB)** e exibe an�
 ---
 
 ## Estrutura do Projeto
-
-## Este projeto foi feito no processo seletivo da nola god level, para mais informações acesse o link abaixo:
-
-[Github](https://github.com/lucasvieira94/nola-god-level/tree/main)
-
-## 🚀 Demonstração Ao Vivo (Deploy)
-
-**[CLIQUE AQUI PARA ACESSAR O DASHBOARD AO VIVO](https://dashboard-de-restaurantes-4rescxo3zdqshpyfzgdefx.streamlit.app/)**
-
----
+├── .streamlit/
+│ └── secrets.toml # Credenciais e configurações do Streamlit
+│
+├── .venv/ # Ambiente virtual Python
+│ ├── Lib/ # Bibliotecas instaladas
+│ ├── Scripts/ # Executáveis do ambiente
+│ └── pyvenv.cfg
+│
+├── pages/ # Páginas secundárias do Dashboard
+│ ├── 2_Análise_Operacional.py # Página de desempenho operacional
+│ ├── 3_Análise_Detalhada_(Explorer).py # Página de exploração detalhada de dados
+│ ├── 4_Análise_de_Clientes_(RFM).py # Página de análise de clientes (RFM)
+│ └── 5_Análise_de_Descontos.py # Página de análise de descontos e taxas
+│
+├── Pagina_Principal.py # Página inicial (Visão Geral do Dashboard)
+├── queries.py # Arquivo com as consultas SQL centralizadas
+├── logic.sql # Script SQL adicional para adicionar functions e views
+│
+├── requirements.txt # Dependências do projeto
+├── README.md # Documentação do projeto
+└── .gitignore # Arquivo para ignorar pastas e arquivos no Git
 
 ## Como Executar o Projeto Localmente
 
